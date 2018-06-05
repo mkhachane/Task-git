@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>	
+		
+   <body>
+   
+     <table border = 1>
+         <thead>
+            <td>Id</td>
+            <td>Name</td>
+            <td>Surname</td>
+            <td>City</td>
+         </thead>
+
+         {% for row in rows %}
+            <tr>
+               <td>{{row["id"]}}</td>
+               <td>{{row["Name"]}}</td>
+               <td>{{row["Surname"]}}</td>
+               <td>{{row["City"]}}</td>
+            </tr>
+         {% endfor %}
+     </table>
+	
+     <p>Do you want <a href = "/logout">
+	      <b>Log_out?</b></a></p>
+	 
+	 
+    </body>
+</head>
+</html>

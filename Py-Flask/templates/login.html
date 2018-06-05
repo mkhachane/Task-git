@@ -1,0 +1,27 @@
+<!doctype html>
+<html>
+   <body>
+   
+      <h1>Log In</h1>
+     {% if error %}
+     <p><strong>Error:</strong>{{ error }}
+     {% endif %}
+                
+      <form action = "login" method = POST>
+         <dl>
+            <dt>Username:</dt>
+            <dd>
+               <input type = "text" placeholder= "username" name = username 
+                  value = "{{request.form.username }}">
+            </dd>
+            
+            <dt>Password:</dt>
+            <dd><input type = password placeholder= "password" name = password></dd>
+         </dl>
+         
+         <dd><input type="hidden" name="url" value="{{next}}"></dd>        
+         
+         <p><input type = "submit" value = Login></p>
+      </form>
+   </body>
+</html>
