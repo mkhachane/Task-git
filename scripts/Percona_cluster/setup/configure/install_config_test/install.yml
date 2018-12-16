@@ -1,0 +1,284 @@
+---
+- hosts: percona_0
+  vars_files:
+    - ../../vars/vars.yml
+  tasks:
+    - name: Change the mode of security module using command
+      shell: "sed -i -e 's/SELINUX=enforcing/SELINUX=permissive/g' /etc/selinux/config"
+
+    - name: Change the mode of security module using command Runtime
+      shell: "setenforce 0"
+
+    # Install Percona Cluser on CentOS
+    - name: Install percona repository package
+      become: yes
+      yum: name="http://www.percona.com/downloads/percona-release/redhat/0.1-6/percona-release-0.1-6.noarch.rpm" state=present
+
+    - name: Install Percona XtraDB Cluster packages
+      become: yes
+      yum: name="Percona-XtraDB-Cluster-57" state=installed
+
+    - name: Install Python-MYSQL module
+      become: yes
+      yum: name=MySQL-python state=installed
+
+    - name: Start the MYSQL Service | Ensure MySQL is up-and-running
+      become: yes
+      service: name=mysql enabled=yes state=started
+
+    - shell: cat /var/log/mysqld.log | grep "temporary password" | grep -oE '[^ ]+$'
+      register: tmp_root_password
+
+    - name: Detect and properly set root password
+      become: yes
+      stat:
+        path: /root/.my.cnf
+      register: r
+    - mysql_user:
+        name: root
+        password: "{{ mysql_root_password }}"
+      when: r.stat.exists==True
+    - name: Set new password from temporary password
+      shell: 'mysql -e "SET PASSWORD = PASSWORD(''{{ mysql_root_password }}'');" --connect-expired-password -uroot -p"{{ tmp_root_password.stdout }}"'
+      when: r.stat.exists==False
+
+    - name: Create SST user in MSYQL
+      command: >
+        mysql --user=root --password="{{ mysql_root_password }}"
+        --host=localhost
+        --execute="CREATE USER 'sstuser'@'localhost' IDENTIFIED BY 'Cision@SST'; "
+      register: stuff
+      changed_when: False
+
+    - name: GRANT All
+      command: >
+        mysql --user=root --password="{{ mysql_root_password }}"
+        --host=localhost
+        --execute="GRANT ALL PRIVILEGES ON *.* TO 'sstuser'@'localhost'; "
+      register: stuff
+      changed_when: False
+
+    - name: FLUSH PRIVILEGES
+      command: >
+        mysql --user=root --password="{{ mysql_root_password }}"
+        --host=localhost
+        --execute="FLUSH PRIVILEGES;"
+      register: stuff
+      changed_when: False
+
+     # Stop MYSQL service after changing user and password
+    - name: Stop the MYSQL service
+      become: yes
+      service: name=mysql enabled=yes state=stopped
+
+    - name: Backuping the main config file
+      become: yes
+      shell: mv /etc/my.cnf /etc/my.cnf_back
+
+
+    # Configure the config files from bootstrap node
+    - name: Copy configuration file to  server
+      become: yes
+      copy:
+        src: ../files/percona1/wsrep.cnf
+        dest: /etc/my.cnf
+
+
+- hosts: percona_1
+  vars_files:
+    - ../../vars/vars.yml
+  tasks:
+    - name: Change the mode of security module using command
+      shell: "sed -i -e 's/SELINUX=enforcing/SELINUX=permissive/g' /etc/selinux/config"
+
+    - name: Change the mode of security module using command Runtime
+      shell: "setenforce 0"
+
+    # Install Percona Cluser on CentOS
+    - name: Install percona repository package
+      become: yes
+      yum: name="http://www.percona.com/downloads/percona-release/redhat/0.1-6/percona-release-0.1-6.noarch.rpm" state=present
+
+    - name: Install Percona XtraDB Cluster packages
+      become: yes
+      yum: name="Percona-XtraDB-Cluster-57" state=installed
+
+    - name: Install Python-MYSQL module
+      become: yes
+      yum: name=MySQL-python state=installed
+
+    - name: Start the MYSQL Service | Ensure MySQL is up-and-running
+      become: yes
+      service: name=mysql enabled=yes state=started
+
+    - shell: cat /var/log/mysqld.log | grep "temporary password" | grep -oE '[^ ]+$'
+      register: tmp_root_password
+
+    - name: Detect and properly set root password
+      become: yes
+      stat:
+        path: /root/.my.cnf
+      register: r
+    - mysql_user:
+        name: root
+        password: "{{ mysql_root_password }}"
+      when: r.stat.exists==True
+    - name: Set new password from temporary password
+      shell: 'mysql -e "SET PASSWORD = PASSWORD(''{{ mysql_root_password }}'');" --connect-expired-password -uroot -p"{{ tmp_root_password.stdout }}"'
+      when: r.stat.exists==False
+
+    - name: Create SST user in MSYQL
+      command: >
+        mysql --user=root --password="{{ mysql_root_password }}"
+        --host=localhost
+        --execute="CREATE USER 'sstuser'@'localhost' IDENTIFIED BY 'Cision@SST'; "
+      register: stuff
+      changed_when: False
+
+    - name: GRANT All
+      command: >
+        mysql --user=root --password="{{ mysql_root_password }}"
+        --host=localhost
+        --execute="GRANT ALL PRIVILEGES ON *.* TO 'sstuser'@'localhost'; "
+      register: stuff
+      changed_when: False
+
+    - name: FLUSH PRIVILEGES
+      command: >
+        mysql --user=root --password="{{ mysql_root_password }}"
+        --host=localhost
+        --execute="FLUSH PRIVILEGES;"
+      register: stuff
+      changed_when: False
+
+     # Stop MYSQL service after changing user and password
+    - name: Stop the MYSQL service
+      become: yes
+      service: name=mysql enabled=yes state=stopped
+
+    - name: Backuping the main config file
+      become: yes
+      shell: mv /etc/my.cnf /etc/my.cnf_back
+
+
+    # Configure the config files from bootstrap node
+    - name: Copy configuration file to  server
+      become: yes
+      copy:
+        src: ../files/percona1/wsrep.cnf
+        dest: /etc/my.cnf
+
+
+- hosts: percona_2
+  vars_files:
+    - ../../vars/vars.yml
+  tasks:
+    - name: Change the mode of security module using command
+      shell: "sed -i -e 's/SELINUX=enforcing/SELINUX=permissive/g' /etc/selinux/config"
+
+    - name: Change the mode of security module using command Runtime
+      shell: "setenforce 0"
+
+    # Install Percona Cluser on CentOS
+    - name: Install percona repository package
+      become: yes
+      yum: name="http://www.percona.com/downloads/percona-release/redhat/0.1-6/percona-release-0.1-6.noarch.rpm" state=present
+
+    - name: Install Percona XtraDB Cluster packages
+      become: yes
+      yum: name="Percona-XtraDB-Cluster-57" state=installed
+
+    - name: Install Python-MYSQL module
+      become: yes
+      yum: name=MySQL-python state=installed
+
+    - name: Start the MYSQL Service | Ensure MySQL is up-and-running
+      become: yes
+      service: name=mysql enabled=yes state=started
+
+    - shell: cat /var/log/mysqld.log | grep "temporary password" | grep -oE '[^ ]+$'
+      register: tmp_root_password
+
+    - name: Detect and properly set root password
+      become: yes
+      stat:
+        path: /root/.my.cnf
+      register: r
+    - mysql_user:
+        name: root
+        password: "{{ mysql_root_password }}"
+      when: r.stat.exists==True
+    - name: Set new password from temporary password
+      shell: 'mysql -e "SET PASSWORD = PASSWORD(''{{ mysql_root_password }}'');" --connect-expired-password -uroot -p"{{ tmp_root_password.stdout }}"'
+      when: r.stat.exists==False
+
+    - name: Create SST user in MSYQL
+      command: >
+        mysql --user=root --password="{{ mysql_root_password }}"
+        --host=localhost
+        --execute="CREATE USER 'sstuser'@'localhost' IDENTIFIED BY 'Cision@SST'; "
+      register: stuff
+      changed_when: False
+
+    - name: GRANT All
+      command: >
+        mysql --user=root --password="{{ mysql_root_password }}"
+        --host=localhost
+        --execute="GRANT ALL PRIVILEGES ON *.* TO 'sstuser'@'localhost'; "
+      register: stuff
+      changed_when: False
+
+    - name: FLUSH PRIVILEGES
+      command: >
+        mysql --user=root --password="{{ mysql_root_password }}"
+        --host=localhost
+        --execute="FLUSH PRIVILEGES;"
+      register: stuff
+      changed_when: False
+
+     # Stop MYSQL service after changing user and password
+    - name: Stop the MYSQL service
+      become: yes
+      service: name=mysql enabled=yes state=stopped
+
+    - name: Backuping the main config file
+      become: yes
+      shell: mv /etc/my.cnf /etc/my.cnf_back
+
+
+    # Configure the config files from bootstrap node
+    - name: Copy configuration file to  server
+      become: yes
+      copy:
+        src: ../files/percona1/wsrep.cnf
+        dest: /etc/my.cnf
+
+
+
+#### Start the all nodes
+- hosts: percona_0
+  vars_files:
+    - ../../vars/vars.yml
+  tasks:
+    # Start the MYSQL server
+    - name: Start the MYSQL service after all done
+      become: yes
+      command: sudo systemctl start mysql@bootstrap.service
+
+- hosts: percona_1
+  vars_files:
+    - ../../vars/vars.yml
+  tasks:
+    # Start the server
+    - name: Start the MYSQL service
+      become: yes
+      service: name=mysql enabled=yes state=started
+
+- hosts: percona_2
+  vars_files:
+    - ../../vars/vars.yml
+  tasks:
+    # Start the server
+    - name: Start the MYSQL service
+      become: yes
+      service: name=mysql enabled=yes state=started

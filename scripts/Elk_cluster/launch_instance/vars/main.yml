@@ -1,0 +1,12 @@
+---
+# vars file for launch-instance
+#write access key and secret key
+AWS_ACCESS_KEY_ID: 
+AWS_SECRET_ACCESS_KEY: 
+
+#pem key name
+keypair: 
+
+hostpath: /etc/ansible/hosts
+#put the pem file path into ansible_ssh_private_key_file
+hoststring: ansible_ssh_user=ubuntu ansible_ssh_private_key_file=

@@ -1,0 +1,6 @@
+---
+-  import_playbook: ./elk1/elk1.yml
+-  import_playbook: ./elk2/elk2.yml
+-  import_playbook: ./logstash/logstash.yml
+-  import_playbook: ./kibana/kibana.yml
+

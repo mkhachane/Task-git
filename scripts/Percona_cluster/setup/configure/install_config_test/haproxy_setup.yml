@@ -1,0 +1,43 @@
+---
+ # Install and Configure the HAProxy server
+- hosts: percona_3
+  tasks:
+     - name: Install the HAProxy on instance
+       become: yes
+       shell: "yum -y install haproxy sysbench"
+
+     - name: Replace the HAProxy config file into new configurations
+       become: yes
+       copy:
+         src: ./files/haproxy.cfg
+         dest: /etc/haproxy/haproxy.cfg
+
+
+     - name: Connect only one at a time
+       become: yes
+       shell: "setsebool -P haproxy_connect_any=1"
+
+     - name: Start HAProxy service
+       become: yes
+       service: name=haproxy state=started
+
+
+
+# Create clustercheck user into mysql
+- hosts: percona_0
+  vars_files:
+    - ../../vars/vars.yml
+  tasks:
+     - include_tasks: percona.yml
+
+- hosts: percona_1
+  vars_files:
+    - ../../vars/vars.yml
+  tasks:
+     - include_tasks: percona.yml
+
+- hosts: percona_2
+  vars_files:
+    - ../../vars/vars.yml
+  tasks:
+     - include_tasks: percona.yml

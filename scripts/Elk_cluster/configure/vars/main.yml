@@ -1,0 +1,13 @@
+---
+#All variables for elasticsearch file
+#cmd for get host IP of kibana server
+getIp: hostname -I | grep -o '[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}' | grep -m1 "" 
+cluster_name: ELK-Cluster-setup
+master_node_name: master-node
+second_node_name: node-2
+
+master_node_host_ip: 
+
+second_node_ip: 
+
+kibana_server_host_ip: 

@@ -1,0 +1,42 @@
+---
+# Add new clustercheck user
+  - name: Create Cluster user
+    command: >
+      mysql --user=root --password="{{ mysql_root_password }}"
+      --host=localhost
+      --execute="grant process on *.* to 'clustercheckuser'@'localhost' identified by 'clustercheckpassword!'; "
+    register: stuff
+    changed_when: False
+
+  - name: FLUSH PRIVILEGES
+    command: >
+      mysql --user=root --password="{{ mysql_root_password }}"
+      --host=localhost
+      --execute="FLUSH PRIVILEGES;"
+    register: stuff
+    changed_when: False
+
+  - name: Check the clustercheck
+    shell: clustercheck
+
+  - name: Install xinetd
+    become: yes
+    yum: name=xinetd state=installed
+
+
+  - name: Add the IP's into configure file
+    become: yes
+    replace:
+      dest: /etc/xinetd/mysqlchk
+      regex: "        only_form       ="
+      replace: ""        only_form       = {{ percona_3 }}""
+
+  - name: Add the new service into services
+    become: yes
+    lineinfile:
+      dest: /etc/services
+      line: "mysqlchk 9200/tcp # mysqlchk"
+
+  - name: Install xinetd
+    become: yes
+    service: name=xinetd state=restarted

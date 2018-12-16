@@ -1,0 +1,5 @@
+---
+
+- import_playbook: ./write_ip_config.yml
+- import_playbook: ./percona/install.yml
+- import_playbook: ./haproxy/haproxy_setup.yml

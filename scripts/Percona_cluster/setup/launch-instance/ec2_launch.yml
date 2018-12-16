@@ -1,0 +1,40 @@
+---
+- hosts: localhost
+  connection: local
+  vars_files:
+    - ../vars/vars.yml
+  tasks:
+    - name: Launch the new EC2 instances
+      ec2:
+        aws_access_key: "{{ AWS_ACCESS_KEY }}"
+        aws_secret_key: "{{ AWS_SECRET_KEY }}"
+        key_name: "{{ keypair }}"
+        instance_type:  m3.medium
+        instance_tags:
+          Name: percona-all-test-nodes
+        image: ami-004b66801cc40a839
+        wait: yes
+        group: launch-wizard-65
+        count: 3
+        vpc_subnet_id: subnet-6a5f7b42
+        assign_public_ip: yes
+        region: us-east-1
+      register: ec2
+
+    - name: Add the newly created EC2 instance(s) to ansible host group
+      lineinfile: dest={{ hostpath }}
+        regexp={{ item.private_ip }}
+        line="[percona_{{ item.ami_launch_index }}]\n{{ item.private_ip }} {{ ansibleUser }}"
+        state=present
+      with_items: "{{ ec2.instances}}"
+
+    - name: Store the newly created instances IP's into file
+      lineinfile:
+         dest: "{{ StoreFilePath }}"
+         line: "percona_{{ item.ami_launch_index }} : {{ item.private_ip }}"
+      with_items: "{{ ec2.instances }}"
+
+    - name: Wait 300 seconds, but only start checking after 60 seconds
+      wait_for_connection:
+        delay: 60
+        timeout: 300

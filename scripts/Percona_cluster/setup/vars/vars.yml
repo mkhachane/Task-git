@@ -1,0 +1,13 @@
+---
+#All variables which need for launch EC2 instances
+AWS_ACCESS_KEY: 
+AWS_SECRET_KEY: 
+keypair: 
+hostpath: /etc/ansible/hosts
+
+# Variables for configurations
+StoreFilePath: ../vars/vars.yml
+mysql_root_password: Cision@MYSQL
+ansibleUser: ansible_ssh_user=centos ansible_ssh_private_key_file=
+
+# All IP's of new Percona Instances

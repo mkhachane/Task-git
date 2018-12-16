@@ -1,0 +1,83 @@
+---
+- hosts: nodes_0
+  vars_files:
+    - ../vars/main.yml
+  tasks:
+    - name: add repo for java 8
+      become: yes
+      apt_repository: repo='ppa:webupd8team/java' state=present
+
+    - name: Get private IP of server
+      shell: "{{ getIp }}"
+      register: command_output
+    - set_fact:
+        cmd_out: "{{ command_output.stdout }}"
+
+    - name: set licence selected
+      become: yes
+      shell: /bin/echo debconf shared/accepted-oracle-license-v1-1 select true | /usr/bin/debconf-set-selections
+
+    - name: set licence seen
+      become: yes
+      shell: /bin/echo debconf shared/accepted-oracle-license-v1-1 seen true | /usr/bin/debconf-set-selections
+
+    - name: install java 8
+      become: yes
+      apt: name=oracle-java8-installer state=latest force=yes
+
+    # Install kibana using deb
+
+    - name: Install Kibana with apt
+      become: true
+      shell: wget https://artifacts.elastic.co/downloads/kibana/kibana-6.4.0-amd64.deb
+
+    # Configurations
+
+    - name: Updating the config file to allow outside access
+      become: true
+      shell: shasum -a 512 kibana-6.4.0-amd64.deb
+
+    - name: Defining server port
+      become: true
+      shell: sudo dpkg -i kibana-6.4.0-amd64.deb
+
+
+    - name: Defining Elasticsearch URL
+      become: true
+      shell: ps -p 1
+
+    - name: Unable Kibana service
+      become: true
+      shell: sudo update-rc.d kibana defaults 95 10
+
+    # Starting Kibana
+    - name: Starting Kibana
+      become: true
+      service:
+        name: kibana
+        state: started
+
+    # Configure the kibana
+    - name: Backup the exsisting config file
+      become: true
+      command: mv /etc/kibana/kibana.yml /etc/kibana/kibana.yml_back
+
+    - name: Create new config file
+      become: true
+      file: path=/etc/kibana/kibana.yml state=touch
+
+    - name: Update config file
+      become: true
+      lineinfile:
+        destfile: /etc/kibana/kibana.yml
+        line: "{{ item.line }}"
+      with_items:
+        - { line: 'server.port: 5601'}
+        - { line: 'server.host: "{{ cmd_out }}"'}
+        - { line: 'elasticsearch.url: "http://{{ master_node_host_ip }}:9200"'}
+
+    - name: restart kibana
+      become: true
+      service: name=kibana state=restarted
+
+
