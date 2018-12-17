@@ -1,13 +1,14 @@
 ---
 #All variables which need for launch EC2 instances
-AWS_ACCESS_KEY: 
-AWS_SECRET_KEY: 
-keypair: 
-hostpath: /etc/ansible/hosts
+AWS_ACCESS_KEY: AKIAJ2O6YWB7F6UO7UOQ
+AWS_SECRET_KEY: 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
+keypair: devops
+# Add ssh_user like(centos/ubuntu) and AWS Private Key path
+ansibleUser: ansible_ssh_user=centos ansible_ssh_private_key_file=/home/mayu/devops.pem
 
-# Variables for configurations
+# Default variables for configurations
+hostpath: /etc/ansible/hosts
 StoreFilePath: ../vars/vars.yml
-mysql_root_password: Cision@MYSQL
-ansibleUser: ansible_ssh_user=centos ansible_ssh_private_key_file=
+mysql_root_password: Cision@MYSQL #Password of MYSQL on all Percona Nodes
 
 # All IP's of new Percona Instances

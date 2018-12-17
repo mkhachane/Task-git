@@ -1,0 +1,47 @@
+---
+# Adding the newly created instance IP's into configurations files.
+- hosts: localhost
+  vars_files:
+      - ../vars/vars.yml
+  tasks:
+    # Configurations for Percona Cluster
+    # Change the ip's in  master node
+    - name: Add the all nodes IP's into config file
+      replace:
+        path: ./files/my.cnf
+        regexp: "wsrep_cluster_address=gcomm://"
+        replace: "wsrep_cluster_address=gcomm://{{ percona_0 }},{{ percona_1 }},{{ percona_2 }}"
+
+    # configurations for HAProxy server
+    - name: Add percona cluser ip's in cluster_setup config file
+      replace:
+        path: ./files/cluster_setup.cfg
+        regexp: "^(.*)server percona1(.*)$"
+        replace: "server percona1 {{ percona_0 }}:3306 check port 9200 inter 12000 rise 3 fall 3"
+
+    - name: Add percona cluser ip's in cluster_setup config file
+      replace:
+        path: ./files/cluster_setup.cfg
+        regexp: "^(.*)server percona2(.*)$"
+        replace: "server percona2 {{ percona_1 }}:3306 check port 9200 inter 12000 rise 3 fall 3"
+
+    - name: Add percona cluser ip's in cluster_setup config file
+      replace:
+        path: ./files/cluster_setup.cfg
+        regexp: "^(.*)server percona3(.*)$"
+        replace: "server percona3 {{ percona_2 }}:3306 check port 9200 inter 12000 rise 3 fall 3"
+
+    - name: Add line to HAProxy config file
+      lineinfile:
+          dest: ./files/cluster_setup.cfg
+          line: "server percona1 {{ percona_0 }}:3306 check port 9200 inter 12000 rise 3 fall 3"
+
+    - name: Add line to HAProxy config file
+      lineinfile:
+          dest: ./files/cluster_setup.cfg
+          line: "server percona2 {{ percona_1 }}:3306 check port 9200 inter 12000 rise 3 fall 3 backup"
+
+    - name: Add line to HAProxy config file
+      lineinfile:
+          dest: ./files/cluster_setup.cfg
+          line: "server percona3 {{ percona_2 }}:3306 check port 9200 inter 12000 rise 3 fall 3 backup"

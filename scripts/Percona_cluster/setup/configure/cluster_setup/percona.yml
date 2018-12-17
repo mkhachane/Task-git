@@ -1,12 +1,15 @@
 ---
+# Install and Configure Percona Cluster | Start the all nodes.
 - hosts: percona_0
   vars_files:
     - ../../vars/vars.yml
   tasks:
     - name: Change the mode of security module using command
+      become: yes
       shell: "sed -i -e 's/SELINUX=enforcing/SELINUX=permissive/g' /etc/selinux/config"
 
     - name: Change the mode of security module using command Runtime
+      become: yes
       shell: "setenforce 0"
 
     # Install Percona Cluser on CentOS
@@ -71,17 +74,31 @@
       become: yes
       service: name=mysql enabled=yes state=stopped
 
+    # Configure the config files from bootstrap node
     - name: Backuping the main config file
       become: yes
       shell: mv /etc/my.cnf /etc/my.cnf_back
 
-
-    # Configure the config files from bootstrap node
     - name: Copy configuration file to  server
       become: yes
       copy:
-        src: ../files/percona1/wsrep.cnf
+        src: ../files/my.cnf
         dest: /etc/my.cnf
+
+    - name: Add the bootstrap node IP into cofig file
+      become: yes
+      replace:
+        path: /etc/my.cnf
+        regexp: "wsrep_node_address="
+        replace: "wsrep_node_address={{ percona_0 }}"
+
+    - name: Add node name into config file
+      become: yes
+      replace:
+        path: /etc/my.cnf
+        regexp: "wsrep_node_name="
+        replace: "wsrep_node_name=pxc-cluster-node-1"
+
 
 
 - hosts: percona_1
@@ -89,9 +106,11 @@
     - ../../vars/vars.yml
   tasks:
     - name: Change the mode of security module using command
+      become: yes
       shell: "sed -i -e 's/SELINUX=enforcing/SELINUX=permissive/g' /etc/selinux/config"
 
     - name: Change the mode of security module using command Runtime
+      become: yes
       shell: "setenforce 0"
 
     # Install Percona Cluser on CentOS
@@ -160,13 +179,28 @@
       become: yes
       shell: mv /etc/my.cnf /etc/my.cnf_back
 
-
     # Configure the config files from bootstrap node
     - name: Copy configuration file to  server
       become: yes
       copy:
-        src: ../files/percona1/wsrep.cnf
+        src: ../files/my.cnf
         dest: /etc/my.cnf
+
+    - name: Add the bootstrap node IP into cofig file
+      become: yes
+      replace:
+        path: /etc/my.cnf
+        regexp: "wsrep_node_address="
+        replace: "wsrep_node_address={{ percona_1 }}"
+
+
+    - name: Add node name into config file
+      become: yes
+      replace:
+        path: /etc/my.cnf
+        regexp: "wsrep_node_name="
+        replace: "wsrep_node_name=pxc-cluster-node-2"
+
 
 
 - hosts: percona_2
@@ -174,9 +208,11 @@
     - ../../vars/vars.yml
   tasks:
     - name: Change the mode of security module using command
+      become: yes
       shell: "sed -i -e 's/SELINUX=enforcing/SELINUX=permissive/g' /etc/selinux/config"
 
     - name: Change the mode of security module using command Runtime
+      become: yes
       shell: "setenforce 0"
 
     # Install Percona Cluser on CentOS
@@ -245,32 +281,45 @@
       become: yes
       shell: mv /etc/my.cnf /etc/my.cnf_back
 
-
     # Configure the config files from bootstrap node
     - name: Copy configuration file to  server
       become: yes
       copy:
-        src: ../files/percona1/wsrep.cnf
+        src: ../files/my.cnf
         dest: /etc/my.cnf
 
+    - name: Add the bootstrap node IP into cofig file
+      become: yes
+      replace:
+        path: /etc/my.cnf
+        regexp: "wsrep_node_address="
+        replace: "wsrep_node_address={{ percona_2 }}"
+
+    - name: Add node name into config file
+      become: yes
+      replace:
+        path: /etc/my.cnf
+        regexp: "wsrep_node_name="
+        replace: "wsrep_node_name=pxc-cluster-node-3"
 
 
-#### Start the all nodes
+
+#### Start the MYSQL-service of all nodes
 - hosts: percona_0
   vars_files:
     - ../../vars/vars.yml
   tasks:
     # Start the MYSQL server
-    - name: Start the MYSQL service after all done
+    - name: Start the MYSQL-service on master node 
       become: yes
-      command: sudo systemctl start mysql@bootstrap.service
+      command: systemctl start mysql@bootstrap.service
 
 - hosts: percona_1
   vars_files:
     - ../../vars/vars.yml
   tasks:
     # Start the server
-    - name: Start the MYSQL service
+    - name: Start the MYSQL service on data node
       become: yes
       service: name=mysql enabled=yes state=started
 
@@ -279,6 +328,6 @@
     - ../../vars/vars.yml
   tasks:
     # Start the server
-    - name: Start the MYSQL service
+    - name: Start the MYSQL service on data node 
       become: yes
       service: name=mysql enabled=yes state=started

@@ -1,4 +1,5 @@
 ---
+# Launch the AWS VM's and add the IP's of that VM's in Ansible host file and Variable file.
 - hosts: localhost
   connection: local
   vars_files:
@@ -11,11 +12,11 @@
         key_name: "{{ keypair }}"
         instance_type:  m3.medium
         instance_tags:
-          Name: percona-all-test-nodes
+          Name: percona-test-nodes
         image: ami-004b66801cc40a839
         wait: yes
         group: launch-wizard-65
-        count: 3
+        count: 4
         vpc_subnet_id: subnet-6a5f7b42
         assign_public_ip: yes
         region: us-east-1

@@ -1,0 +1,25 @@
+---
+ # Install and Configure the HAProxy server | Start Server
+- hosts: percona_3
+  tasks:
+     - name: Install the HAProxy on instance
+       become: yes
+       shell: "yum -y install cluster_setup sysbench"
+
+     - name: Backuping the old config file
+       become: yes
+       shell: "mv /etc/cluster_setup/cluster_setup.cfg /etc/cluster_setup/cluster_setup.cfg_back"
+
+     - name: Copy the HAProxy config file with new configurations
+       become: yes
+       copy:
+         src: ../files/cluster_setup.cfg
+         dest: /etc/cluster_setup/cluster_setup.cfg
+
+     - name: Connect only one at a time
+       become: yes
+       shell: "setsebool -P haproxy_connect_any=1"
+
+     - name: Start HAProxy service
+       become: yes
+       service: name=cluster_setup state=started

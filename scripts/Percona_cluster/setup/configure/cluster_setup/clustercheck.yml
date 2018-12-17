@@ -1,0 +1,140 @@
+---
+# Create a ClusterCheck User on MYSQL of all Percona nodes.
+- hosts: percona_0
+  vars_files:
+      - ../../vars/vars.yml
+  tasks:
+    # Add new clustercheck user
+    - name: Create Cluster user
+      command: >
+        mysql --user=root --password="{{ mysql_root_password }}"
+        --host=localhost
+        --execute="grant process on *.* to 'clustercheckuser'@'localhost' identified by 'clustercheckpassword!'; "
+      register: stuff
+      changed_when: False
+
+    - name: FLUSH PRIVILEGES
+      command: >
+        mysql --user=root --password="{{ mysql_root_password }}"
+        --host=localhost
+        --execute="FLUSH PRIVILEGES;"
+      register: stuff
+      changed_when: False
+
+    - name: Check the clustercheck
+      shell: clustercheck
+
+    - name: Install xinetd
+      become: yes
+      yum: name=xinetd state=installed
+
+    - name: Add the IP's into configure file
+      become: yes
+      replace:
+        path: /etc/xinetd.d/mysqlchk
+        regexp: "only_from       = 0.0.0.0/0"
+        replace: "only_from       = {{ percona_3 }}"
+
+    - name: Add the new service into services
+      become: yes
+      lineinfile:
+        dest: /etc/services
+        line: "mysqlchk 9200/tcp # mysqlchk"
+
+    - name: Restart xinetd service
+      become: yes
+      service: name=xinetd state=restarted
+
+
+#For second data node
+- hosts: percona_1
+  vars_files:
+      - ../../vars/vars.yml
+  tasks:
+    # Add new clustercheck user
+    - name: Create Cluster user
+      command: >
+        mysql --user=root --password="{{ mysql_root_password }}"
+        --host=localhost
+        --execute="grant process on *.* to 'clustercheckuser'@'localhost' identified by 'clustercheckpassword!'; "
+      register: stuff
+      changed_when: False
+
+    - name: FLUSH PRIVILEGES
+      command: >
+        mysql --user=root --password="{{ mysql_root_password }}"
+        --host=localhost
+        --execute="FLUSH PRIVILEGES;"
+      register: stuff
+      changed_when: False
+
+    - name: Check the clustercheck
+      shell: clustercheck
+
+    - name: Install xinetd
+      become: yes
+      yum: name=xinetd state=installed
+
+    - name: Add the IP's into configure file
+      become: yes
+      replace:
+        path: /etc/xinetd.d/mysqlchk
+        regexp: "only_from       = 0.0.0.0/0"
+        replace: "only_from       = {{ percona_3 }}"
+
+    - name: Add the new service into services
+      become: yes
+      lineinfile:
+        dest: /etc/services
+        line: "mysqlchk 9200/tcp # mysqlchk"
+
+    - name: Restart xinetd service
+      become: yes
+      service: name=xinetd state=restarted
+
+
+#For Third Data node
+- hosts: percona_2
+  vars_files:
+      - ../../vars/vars.yml
+  tasks:
+    # Add new clustercheck user
+    - name: Create Cluster user
+      command: >
+        mysql --user=root --password="{{ mysql_root_password }}"
+        --host=localhost
+        --execute="grant process on *.* to 'clustercheckuser'@'localhost' identified by 'clustercheckpassword!'; "
+      register: stuff
+      changed_when: False
+
+    - name: FLUSH PRIVILEGES
+      command: >
+        mysql --user=root --password="{{ mysql_root_password }}"
+        --host=localhost
+        --execute="FLUSH PRIVILEGES;"
+      register: stuff
+      changed_when: False
+
+    - name: Check the clustercheck
+      shell: clustercheck
+
+    - name: Install xinetd
+      become: yes
+      yum: name=xinetd state=installed
+
+    - name: Add the IP's into configure file
+      become: yes
+      replace:
+        path: /etc/xinetd.d/mysqlchk
+        regexp: "only_from       = 0.0.0.0/0"
+        replace: "only_from       = {{ percona_3 }}"
+
+    - name: Add the new service into services
+      become: yes
+      lineinfile:
+        dest: /etc/services
+        line: "mysqlchk 9200/tcp # mysqlchk"
+
+    - name: Restart xinetd service
+      become: yes
+      service: name=xinetd state=restarted
