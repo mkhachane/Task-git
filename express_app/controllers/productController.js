@@ -1,11 +1,13 @@
 const Product = require('../models/productModel');
 
-//Simple version, without validation or sanitation
-// exports.test = function (req, res) {
-//     res.send('Greetings from the Test controller!');
-// };
-
 // controllers/products.js
+/* product_create: create data into database 
+* INPUT:
+*      name: table name
+*      price: any price
+* OUTPUT:
+*     massage
+*/ 
 exports.product_create = function (req, res) {
     let product = new Product(
         {
@@ -21,6 +23,12 @@ exports.product_create = function (req, res) {
 };
 
 //read_details
+/* product_details: read data from database 
+* INPUT:
+*      id: Id from table
+* OUTPUT:
+*     details from table
+*/
 exports.product_details = function (req, res) {
     Product.findById(req.params.id, function (err, product) {
         if (err) return next(err);
@@ -29,6 +37,12 @@ exports.product_details = function (req, res) {
 };
 
 //update controller
+/* product_update: update data into database 
+* INPUT:
+*      Id: table Id
+* OUTPUT:
+*     update_massage
+*/
 exports.product_update = function(req,res) {
     Product.findOneAndUpdate(req.param.id, {$set: req.body}, function (err, product) {
         if (err) return next(err);
@@ -37,6 +51,12 @@ exports.product_update = function(req,res) {
 }
 
 //delete_collections
+/* product_delete: delete data from database 
+* INPUT:
+*      Id: Id of table 
+* OUTPUT:
+*     deleted_massage
+*/
 exports.product_delete = function(req, res) {
     Product.findOneAndDelete(req.param.id, {$set: req.body}, function (err, product) {
         if (err) return next(err);
