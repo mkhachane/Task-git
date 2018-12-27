@@ -31,7 +31,8 @@ var server = app.listen(8080, function () {
 
 })
  
- 
+
+//-> Creates user role into database 
 function initial(){
 	Role.count( (err, count) => {
 		if(!err && count === 0) {
