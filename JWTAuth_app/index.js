@@ -2,17 +2,16 @@ var express = require('express');
 var app = express();
 var bodyParser = require('body-parser');
 const Role = require('./app/models/roleModel.js');
+const user = require('./app/routers/router.js');
+
 // Configuring the database
 const config = require('./app/config/config.js');
 const mongoose = require('mongoose');
 
 app.use(bodyParser.json())
- 
-require('./app/routers/router.js')(app);
+app.use('/user', user )
 
- 
 // mongoose.Promise = global.Promise;
- 
 // Connecting to the database
 mongoose.connect(config.url)
 .then(() => {
@@ -27,12 +26,11 @@ mongoose.connect(config.url)
 var server = app.listen(8080, function () {
   var host = server.address().address
   var port = server.address().port
-  console.log("App listening at http://%s:%s", host, port)
 
+  console.log("App listening at http://%s:%s", host, port)
 })
  
-
-//-> Creates user role into database 
+ 
 function initial(){
 	Role.count( (err, count) => {
 		if(!err && count === 0) {

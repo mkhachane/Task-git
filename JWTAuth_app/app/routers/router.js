@@ -1,17 +1,22 @@
+const express = require('express');
+const router = express.Router();
+const controller = require('../controller/controller.js');
 const varifySignUp = require('./verifySignUp');
 const authJwt = require('./verifyJwtToken');
 
-module.exports = function(app){
-      const controller = require('../controller/controller.js');
-      
-      app.post('/api/auth/signup', [varifySignUp.checkDuplicateUserNameOrEmail, varifySignUp.checkRolesExisted], controller.signup);
+// -> For add new User
+router.post('/signup', [varifySignUp.checkDuplicateUserNameOrEmail, varifySignUp.checkRolesExisted], controller.signup);
 
-      app.post('/api/auth/signin', controller.signin);
+// -> SignIn newly created user
+router.post('/signin', controller.signin);
 
-      app.get('/api/test/user', [authJwt.verifyToken], controller.userContent);
-	
-	app.get('/api/test/superuser', [authJwt.verifyToken, authJwt.isSuperuserOrAdmin], controller.managementBoard);
-	
-	app.get('/api/test/admin', [authJwt.verifyToken, authJwt.isAdmin], controller.adminBoard);
+// -> If role is user
+router.get('/test/user', [authJwt.verifyToken], controller.userContent);
 
-}
+// -> If role is ADMIN or SUPERUSER
+router.get('/superuser', [authJwt.verifyToken, authJwt.isSuperuserOrAdmin], controller.managementBoard);
+
+// -> If role is ADMIN
+router.get('/admin', [authJwt.verifyToken, authJwt.isAdmin], controller.adminBoard);
+
+module.exports = router;

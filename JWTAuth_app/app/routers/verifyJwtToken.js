@@ -5,6 +5,11 @@ const Role = require('../models/roleModel.js');
 
 
 //-> Checking a JWT token is valid or not
+/* Input:
+*	Token
+*  Output:
+*     data of user
+*/
 verifyToken = (req, res, next) => {
 	let token = req.headers['access-token'];
 	if (!token){
@@ -45,10 +50,9 @@ isAdmin = (req, res, next) => {
 					return;
 				}
 			}
-			res.status(403).send("Require for only Admin Role!");
-			return;
+			res.status(403).send("It is require for only Admin Role!");
 		});
-	});
+	}); 
 }
  
 
@@ -74,8 +78,7 @@ isSuperuserOrAdmin = (req, res, next) => {
 					return;
 				}
 			}
-			res.status(403).send("Require SUPERUSER or Admin Roles!");
-			return;
+			res.status(403).send("It is require SUPERUSER or Admin Only!");
 		});
 	});
 }

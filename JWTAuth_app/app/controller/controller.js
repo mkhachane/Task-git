@@ -6,7 +6,7 @@ var jwt = require('jsonwebtoken');
 var bcrypt = require('bcryptjs');
 
 
-//-> Save User into database
+//-> Save User into the database
 exports.signup = (req, res)=> {
       console.log("Processing func -> SignUp");
 
@@ -22,6 +22,7 @@ exports.signup = (req, res)=> {
 		Role.find({
 				'name': { $in: req.body.roles.map(role => role.toUpperCase()) }
 		}, (err, roles) => {
+			console.log(roles)
 			if(err) 
 				res.status(500).send("Error -> " + err);
  
@@ -39,6 +40,14 @@ exports.signup = (req, res)=> {
     });
 }
 
+
+//-> Display username and token for further use
+/* Input:
+*     username
+*     password
+*  Output:
+*     access_token
+*/
 exports.signin = (req, res) => {
 	console.log("Sign-In");
       User.findOne({ username: req.body.username })
@@ -58,22 +67,22 @@ exports.signin = (req, res) => {
       });
 }
 
+//-> Shows user role content
+/* Input:
+*     token
+*  Output:
+*     content of user
+*/
 exports.userContent = (req, res) => {
 	User.findOne({ _id: req.userId })
 	.select('-_id -__v -password')
 	.populate('roles', '-_id -__v')
 	.exec((err, user) => {
 		if (err){
-			if(err.kind === 'ObjectId') {
-				return res.status(404).send({
-					message: "User not found with _id = " + req.userId
-				});                
-			}
 			return res.status(500).send({
 				message: "Error retrieving User with _id = " + req.userId	
 			});
 		}
-					
 		res.status(200).json({
 			"description": "User Content Page",
 			"user": user
@@ -81,18 +90,18 @@ exports.userContent = (req, res) => {
 	});
 }
  
+//-> Shows ADMIN role content
+/* Input:
+*     token
+*  Output:
+*     content of ADMIN
+*/
 exports.adminBoard = (req, res) => {
 	User.findOne({ _id: req.userId })
 	.select('-_id -__v -password')
 	.populate('roles', '-_id -__v')
 	.exec((err, user) => {
 		if (err){
-			if(err.kind === 'ObjectId') {
-				res.status(404).send({
-					message: "User not found with _id = " + req.userId
-				});                
-				return;
-			}
 			res.status(500).json({
 				"description": "Can not access Admin Board",
 				"error": err
@@ -106,18 +115,18 @@ exports.adminBoard = (req, res) => {
 	});
 }
  
+//-> Shows SUPERUSER role content
+/* Input:
+*     token
+*  Output:
+*     content of SUPERUSER
+*/
 exports.managementBoard = (req, res) => {
 	User.findOne({ _id: req.userId })
 	.select('-_id -__v -password')
 	.populate('roles', '-_id -__v')
 	.exec((err, user) => {
 		if (err){
-			if(err.kind === 'ObjectId') {
-				res.status(404).send({
-					message: "User not found with _id = " + req.userId
-				});                
-				return;
-			}
 			res.status(500).json({
 				"description": "Can not access SUPERUSER Board",
 				"error": err
